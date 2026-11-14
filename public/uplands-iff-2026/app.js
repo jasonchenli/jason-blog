@@ -46,11 +46,39 @@ $('filters').addEventListener('keydown', e => {
   const next = e.key === 'Home' ? 0 : e.key === 'End' ? buttons.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
   buttons[next].click();
 });
+let imageGeneration = 0;
+function clearViewerImage() {
+  image.hidden = true;
+  image.removeAttribute('src');
+  image.alt = '';
+}
+async function loadViewerImage(photo) {
+  const generation = ++imageGeneration;
+  clearViewerImage();
+  const status = $('viewer-image-status');
+  status.hidden = false;
+  status.textContent = 'Loading photo…';
+  const pending = new Image();
+  pending.src = photo.src;
+  try {
+    await pending.decode();
+    if (generation !== imageGeneration) return;
+    image.src = photo.src;
+    image.alt = photo.alt;
+    await image.decode();
+    if (generation !== imageGeneration) return;
+    image.hidden = false;
+    status.hidden = true;
+  } catch {
+    if (generation !== imageGeneration) return;
+    clearViewerImage();
+    status.textContent = 'Unable to load this photo. Please reopen it to try again.';
+  }
+}
 function updateViewer(index) {
   activeIndex = (index + activePhotos.length) % activePhotos.length;
   const photo = activePhotos[activeIndex];
-  image.src = photo.src;
-  image.alt = photo.alt;
+  loadViewerImage(photo);
   $('viewer-counter').textContent = `${currentAlbum.name} · ${activeIndex + 1} / ${activePhotos.length}`;
   $('viewer-name').textContent = photo.id;
   const subject = encodeURIComponent(`Photo removal request — ${photo.id}`);
@@ -71,7 +99,7 @@ $('photo-grid').addEventListener('click', e => {
   document.body.style.overflow = 'hidden';
   $('viewer-close').focus();
 });
-$('viewer-close').onclick = () => dialog.close();
+$('viewer-close').onclick = () => { ++imageGeneration; clearViewerImage(); dialog.close(); };
 $('viewer-prev').onclick = () => updateViewer(activeIndex - 1);
 $('viewer-next').onclick = () => updateViewer(activeIndex + 1);
 const shareButton = $('viewer-share');
@@ -167,7 +195,7 @@ $('viewer-download').addEventListener('click', async e => {
     downloadBusy = false;
   }
 });
-dialog.addEventListener('close', () => { document.body.style.overflow = ''; trigger?.focus({preventScroll:true}); });
+dialog.addEventListener('close', () => { if (dialog.open) return; ++imageGeneration; clearViewerImage(); $('viewer-image-status').hidden = true; document.body.style.overflow = ''; trigger?.focus({preventScroll:true}); });
 dialog.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') { e.preventDefault(); updateViewer(activeIndex + 1); }
   if (e.key === 'ArrowLeft') { e.preventDefault(); updateViewer(activeIndex - 1); }
