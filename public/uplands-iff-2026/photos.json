@@ -1,7 +1,7 @@
 {
   "edition": "full-selection-review",
   "sourceCount": 617,
-  "uniqueCount": 305,
+  "uniqueCount": 304,
   "photos": [
     {
       "id": "DSC_0107",
@@ -678,19 +678,6 @@
       "webp": "images/DSC_0180.webp",
       "thumb": "thumbs/DSC_0180.jpg",
       "download": "downloads/DSC_0180.webp"
-    },
-    {
-      "id": "DSC_0181",
-      "filename": "DSC_0181.JPG",
-      "width": 4032,
-      "height": 6048,
-      "group": "food",
-      "highlight": true,
-      "alt": "A food stall or cultural display at the International Food Fair",
-      "src": "images/DSC_0181.webp",
-      "webp": "images/DSC_0181.webp",
-      "thumb": "thumbs/DSC_0181.jpg",
-      "download": "downloads/DSC_0181.webp"
     },
     {
       "id": "DSC_0182",
@@ -3981,7 +3968,6 @@
         "DSC_0139",
         "DSC_0142",
         "DSC_0148",
-        "DSC_0181",
         "DSC_0194",
         "DSC_0212",
         "DSC_0217",
@@ -4052,7 +4038,6 @@
         "DSC_0178",
         "DSC_0179",
         "DSC_0180",
-        "DSC_0181",
         "DSC_0182",
         "DSC_0184",
         "DSC_0186",

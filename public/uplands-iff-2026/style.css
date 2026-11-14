@@ -18,3 +18,5 @@
 
 /* Readable album filters on desktop and phones. */
 #filters{flex-wrap:wrap;overflow:visible;gap:8px}.filter-tab{font-size:16px;line-height:1.35;min-height:48px;padding:11px 18px;gap:9px;border-radius:28px}.filter-tab .count{font-size:13px}.filter-inner{flex-wrap:wrap}@media(max-width:719px){#filters{gap:6px}.filter-tab{font-size:14px;min-height:44px;padding:10px 14px;gap:7px}.filter-tab .count{font-size:12px}}
+
+@media(hover:none){.photo-tile:hover img{filter:none;transform:none}.photo-tile img{transition:none}}

@@ -185,9 +185,22 @@ fetch('photos.json').then(r => { if (!r.ok) throw Error('Unable to load photos')
   data.albums.unshift({id:'all',name:'All Photos',ids:data.photos.map(p => p.id)});
   window.addEventListener('hashchange', route);
   let frame;
+  let layoutWidth = $('photo-grid').clientWidth;
+  let layoutColumns = columnCount();
   window.addEventListener('resize', () => {
     cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(renderWall);
+    frame = requestAnimationFrame(() => {
+      const width = $('photo-grid').clientWidth;
+      const columns = columnCount();
+      // Mobile Safari resizes the viewport height as its toolbar moves.
+      // Keep existing image nodes unless the actual wall width or columns change.
+      if (width === layoutWidth && columns === layoutColumns) return;
+      layoutWidth = width;
+      layoutColumns = columns;
+      renderWall();
+    });
   });
   route();
+  layoutWidth = $('photo-grid').clientWidth;
+  layoutColumns = columnCount();
 }).catch(() => { $('load-error').hidden = false; });
