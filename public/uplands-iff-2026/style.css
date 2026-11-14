@@ -34,3 +34,5 @@
 @media(max-width:719px){#filters{grid-template-columns:repeat(12,minmax(0,1fr));gap:6px}.filter-tab:nth-child(n){grid-column:span 4;min-height:44px;height:44px;border-radius:7px;padding:8px 3px;gap:4px;font-size:13px}.filter-tab:nth-child(-n+2){grid-column:span 6}.filter-tab .count{font-size:11px}}@media(max-width:359px){.filter-tab:nth-child(n){font-size:12px;gap:3px;padding-inline:2px}.filter-tab .count{font-size:10px}}
 
 .viewer-stage{overflow:hidden;touch-action:none}.viewer-stage>img{transform-origin:center;user-select:none;-webkit-user-select:none;-webkit-user-drag:none}.viewer-arrow{z-index:2}
+
+@media(max-width:719px){#filters .filter-tab:nth-child(n){grid-column:span 4}}
