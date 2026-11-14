@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/uplands-iff-2026",
+      "destination": "/uplands-iff-2026/",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/uplands-iff-2026/:path*",
+      "destination": "https://uplands-food-fair-demo-2026.wavylorikeet1.chatgpt.site/:path*"
+    }
+  ]
+}
