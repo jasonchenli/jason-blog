@@ -9,8 +9,16 @@
   ],
   "rewrites": [
     {
-      "source": "/uplands-iff-2026/:path*",
-      "destination": "https://uplands-food-fair-demo-2026.wavylorikeet1.chatgpt.site/:path*"
+      "source": "/uplands-iff-2026/images/:path*",
+      "destination": "https://uplands-food-fair-demo-2026.wavylorikeet1.chatgpt.site/images/:path*"
+    },
+    {
+      "source": "/uplands-iff-2026/thumbs/:path*",
+      "destination": "https://uplands-food-fair-demo-2026.wavylorikeet1.chatgpt.site/thumbs/:path*"
+    },
+    {
+      "source": "/uplands-iff-2026/downloads/:path*",
+      "destination": "https://uplands-food-fair-demo-2026.wavylorikeet1.chatgpt.site/downloads/:path*"
     }
   ]
 }
