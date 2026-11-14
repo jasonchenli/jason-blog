@@ -23,4 +23,4 @@
 
 #viewer-image-status{color:#dce8e2;font-size:14px;text-align:center;padding:20px;max-width:80%}
 
-@media(min-width:360px) and (max-width:719px){.filter-inner{min-width:0}#filters{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none;padding-block:3px;scroll-padding-inline:4px}.filter-tab{flex-shrink:0}}
+@media(max-width:719px){.filter-inner{min-width:0}#filters{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none;padding-block:3px;scroll-padding-inline:4px}.filter-tab{flex-shrink:0}}
