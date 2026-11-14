@@ -48,6 +48,7 @@ $('filters').addEventListener('keydown', e => {
 });
 let imageGeneration = 0;
 function clearViewerImage() {
+  resetPhotoZoom();
   image.hidden = true;
   image.removeAttribute('src');
   image.alt = '';
@@ -200,14 +201,83 @@ dialog.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') { e.preventDefault(); updateViewer(activeIndex + 1); }
   if (e.key === 'ArrowLeft') { e.preventDefault(); updateViewer(activeIndex - 1); }
 });
-let touch;
-$('viewer-stage').addEventListener('touchstart', e => { touch = {x:e.changedTouches[0].clientX,y:e.changedTouches[0].clientY}; }, {passive:true});
-$('viewer-stage').addEventListener('touchend', e => {
-  if (!touch) return;
-  const dx = e.changedTouches[0].clientX - touch.x, dy = e.changedTouches[0].clientY - touch.y;
-  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) updateViewer(activeIndex + (dx < 0 ? 1 : -1));
-  touch = null;
+let photoZoom = 1, photoPan = {x:0,y:0}, gesture = null, lastTap = 0;
+const stage = $('viewer-stage');
+function resetPhotoZoom() {
+  photoZoom = 1;
+  photoPan = {x:0,y:0};
+  gesture = null;
+  image.style.transform = '';
+}
+function applyPhotoZoom() {
+  const maxX = Math.max(0, (image.offsetWidth * photoZoom - stage.clientWidth) / 2);
+  const maxY = Math.max(0, (image.offsetHeight * photoZoom - stage.clientHeight) / 2);
+  photoPan.x = Math.max(-maxX, Math.min(maxX, photoPan.x));
+  photoPan.y = Math.max(-maxY, Math.min(maxY, photoPan.y));
+  image.style.transform = `translate(${photoPan.x}px, ${photoPan.y}px) scale(${photoZoom})`;
+}
+function pinchPoints(touches) {
+  const a = touches[0], b = touches[1];
+  return {distance:Math.hypot(b.clientX-a.clientX,b.clientY-a.clientY),x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2};
+}
+stage.addEventListener('touchstart', e => {
+  if (image.hidden || e.target.closest('button')) return;
+  if (e.touches.length >= 2) {
+    const point = pinchPoints(e.touches);
+    gesture = {kind:'pinch',point,zoom:photoZoom,pan:{...photoPan}};
+  } else {
+    const t = e.touches[0];
+    gesture = {kind:photoZoom>1?'pan':'swipe',x:t.clientX,y:t.clientY,pan:{...photoPan},moved:false};
+  }
 }, {passive:true});
+stage.addEventListener('touchmove', e => {
+  if (!gesture) return;
+  e.preventDefault();
+  if (gesture.kind === 'pinch' && e.touches.length >= 2) {
+    const point = pinchPoints(e.touches), start = gesture.point;
+    photoZoom = Math.max(1, Math.min(4, gesture.zoom * point.distance / Math.max(start.distance,1)));
+    const ratio = photoZoom / gesture.zoom;
+    const box = stage.getBoundingClientRect();
+    photoPan = {
+      x:gesture.pan.x + point.x-start.x + (start.x-box.left-box.width/2-gesture.pan.x)*(1-ratio),
+      y:gesture.pan.y + point.y-start.y + (start.y-box.top-box.height/2-gesture.pan.y)*(1-ratio)
+    };
+    applyPhotoZoom();
+  } else if (gesture.kind !== 'pinch' && e.touches.length === 1) {
+    const t = e.touches[0];
+    gesture.moved ||= Math.hypot(t.clientX-gesture.x,t.clientY-gesture.y)>10;
+    if (gesture.kind === 'pan') {
+      photoPan = {x:gesture.pan.x+t.clientX-gesture.x,y:gesture.pan.y+t.clientY-gesture.y};
+      applyPhotoZoom();
+    }
+  }
+}, {passive:false});
+stage.addEventListener('touchend', e => {
+  if (!gesture) return;
+  if (gesture.kind === 'pinch') {
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      gesture = {kind:'pan',x:t.clientX,y:t.clientY,pan:{...photoPan},moved:true};
+    } else gesture = null;
+    lastTap = 0;
+    return;
+  }
+  const current = gesture;
+  gesture = null;
+  const t = e.changedTouches[0], dx=t.clientX-current.x, dy=t.clientY-current.y;
+  if (current.kind === 'swipe' && Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.5) {
+    lastTap = 0;
+    updateViewer(activeIndex+(dx<0?1:-1));
+  } else if (!current.moved && Math.abs(dx)<10 && Math.abs(dy)<10) {
+    const now = Date.now();
+    if (now-lastTap<300) {
+      if (photoZoom>1) resetPhotoZoom();
+      else {photoZoom=2;applyPhotoZoom();}
+      lastTap=0;
+    } else lastTap=now;
+  }
+}, {passive:true});
+stage.addEventListener('touchcancel', () => {gesture=null;lastTap=0;}, {passive:true});
 fetch('photos.json').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
   data = value;
   data.albums.unshift({id:'all',name:'All Photos',ids:data.photos.map(p => p.id)});
