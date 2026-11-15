@@ -17,7 +17,7 @@ function rows(){
  const pages=Math.max(1,Math.ceil(data.length/25));page=Math.min(page,pages-1);
  $('photo-rows').replaceChildren();
  for(const p of data.slice(page*25,(page+1)*25)){
-  const tr=document.createElement('tr'),td=document.createElement('td'),a=document.createElement('a');a.textContent=p.id;a.href='/uplands-iff-2026/#photo='+p.id;a.target='_blank';a.rel='noopener';td.append(a);tr.append(td);
+  const tr=document.createElement('tr'),td=document.createElement('td'),a=document.createElement('a'),img=document.createElement('img'),label=document.createElement('span');a.className='stats-photo';a.href='/uplands-iff-2026/#photo='+p.id;a.target='_blank';a.rel='noopener';img.src='/uplands-iff-2026/'+p.thumb;img.alt='';img.width=96;img.height=72;img.loading='lazy';img.decoding='async';label.textContent=p.id;a.append(img,label);td.append(a);tr.append(td);
   for(const key of ['views','downloads','shares']){const c=document.createElement('td');c.textContent=number(p[key]);tr.append(c);}$('photo-rows').append(tr);
  }
  if(!data.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=4;td.textContent='没有匹配的照片。';tr.append(td);$('photo-rows').append(tr);}
@@ -35,7 +35,7 @@ async function load(){
  loading=true;$('refresh').disabled=true;$('export').disabled=true;$('status').textContent='正在读取私有统计…';
  const next={pageViews:0,photoViews:0,downloads:0,shares:0,visitors:new Set(),photos:new Map(),days:[]};
  try{
-  if(!allPhotos.length){const r=await fetch('/uplands-iff-2026/photos.json?v=20261115-7');if(!r.ok)throw Error('无法加载照片清单');allPhotos=(await r.json()).photos.map(p=>({id:p.id,views:0,downloads:0,shares:0}));}
+  if(!allPhotos.length){const r=await fetch('/uplands-iff-2026/photos.json?v=20261115-7');if(!r.ok)throw Error('无法加载照片清单');allPhotos=(await r.json()).photos.map(p=>({id:p.id,thumb:p.thumb,views:0,downloads:0,shares:0}));}
   for(let day=from;day<=to;day=new Date(Date.parse(day)+86400000).toISOString().slice(0,10)){
    let cursor=null,dailyPV=0;
    do{const url='/api/iff-stats?day='+day+(cursor?'&cursor='+encodeURIComponent(cursor):'');const r=await fetch(url,{cache:'no-store'});if(r.status===401){showLogin();throw Error('登录已过期，请重新登录。');}if(!r.ok)throw Error('读取统计失败，请稍后重试。');const d=await r.json();for(const k of ['pageViews','photoViews','downloads','shares'])next[k]+=d.totals[k];dailyPV+=d.totals.pageViews;d.visitors.forEach(v=>next.visitors.add(v));for(const p of d.photos){const old=next.photos.get(p.id)||{views:0,downloads:0,shares:0};next.photos.set(p.id,{id:p.id,views:old.views+p.views,downloads:old.downloads+p.downloads,shares:old.shares+p.shares});}cursor=d.nextCursor;}while(cursor);
