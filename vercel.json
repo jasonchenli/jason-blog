@@ -9,6 +9,10 @@
   ],
   "rewrites": [
     {
+      "source": "/uplands-iff-2026/stats",
+      "destination": "/api/iff-dashboard"
+    },
+    {
       "source": "/uplands-iff-2026/images/:path*",
       "destination": "https://uplands-food-fair-demo-2026.wavylorikeet1.chatgpt.site/images/:path*"
     },

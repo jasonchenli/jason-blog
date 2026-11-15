@@ -168,6 +168,7 @@ async function loadViewerImage(photo) {
     if (generation !== imageGeneration) return;
     image.hidden = false;
     status.hidden = true;
+    window.iffTrack?.('photo_view', photo.id);
   } catch {
     if (generation !== imageGeneration) return;
     clearViewerImage();
@@ -255,10 +256,12 @@ function prepareShare(photo) {
 shareButton.addEventListener('click', async () => {
   if (!preparedPhoto || shareButton.disabled) return;
   const file = preparedPhoto;
+  const sharedPhotoId = preparedId;
   shareButton.disabled = true;
   try {
     // File is prepared before this gesture: Safari requires immediate user activation.
     await navigator.share({files:[file]});
+    window.iffTrack?.('share', sharedPhotoId);
     $('download-status').textContent = 'Choose Save Image in the share menu to add it to Photos.';
   } catch (error) {
     if (error.name !== 'AbortError') $('download-status').textContent = 'Sharing unavailable. Use Download photo, then save the image.';
@@ -283,6 +286,7 @@ $('viewer-download').addEventListener('click', async e => {
     anchor.download = file.name;
     document.body.appendChild(anchor);
     anchor.click();
+    window.iffTrack?.('download', photo.id);
     anchor.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
     $('download-status').textContent = 'JPG downloaded. On iPhone, use Save / share to save to Photos.';
@@ -377,7 +381,7 @@ stage.addEventListener('touchend', e => {
   }
 }, {passive:true});
 stage.addEventListener('touchcancel', () => {gesture=null;lastTap=0;}, {passive:true});
-fetch('photos.json?v=20261115-7').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
+fetch('photos.json?v=20261115-8').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
   data = value;
   data.albums.splice(1, 0, {id:'all',name:'All',ids:data.photos.map(p => p.id)});
   window.addEventListener('hashchange', route);
