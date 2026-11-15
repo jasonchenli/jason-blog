@@ -42,5 +42,10 @@
 
 /* Five visible tabs: two leading choices, then three categories. */
 @media(max-width:719px){#filters{grid-template-columns:repeat(6,minmax(0,1fr))}#filters .filter-tab:nth-child(n){grid-column:span 2}#filters .filter-tab:nth-child(-n+2){grid-column:span 3}}
-/* Preserve the curated reading order and give the opening photographs room. */
-.photo-grid.highlights-wall{grid-template-columns:repeat(6,minmax(0,1fr));align-items:start;gap:18px}.highlights-wall .curated-photo{grid-column:span 2}.highlights-wall .curated-hero{grid-column:1/-1}.highlights-wall .curated-feature{grid-column:span 3}.highlights-wall .photo-tile img{transform:none}.highlights-wall .curated-hero img{max-height:80vh;object-fit:contain;background:var(--paper)}@media(max-width:719px){.photo-grid.highlights-wall{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.highlights-wall .curated-photo{grid-column:span 1}.highlights-wall .curated-hero,.highlights-wall .curated-feature{grid-column:1/-1}.highlights-wall .curated-hero img{max-height:none}}
+/* Ordered masonry: precomputed coordinates use catalog dimensions, not image loads. */
+.wall-section.wrap{max-width:1440px}
+.photo-grid.highlights-wall{display:block;position:relative;gap:14px;isolation:isolate}
+.highlights-wall .curated-photo{position:absolute;margin:0;overflow:hidden;background:#e9ece4}
+.highlights-wall .curated-photo img{width:100%;height:100%;object-fit:contain;transform:none;transition:filter .2s}
+.highlights-wall .curated-hero{background:#e9ece4}
+@media(prefers-reduced-motion:reduce){.highlights-wall .photo-tile img{transition:none}}
