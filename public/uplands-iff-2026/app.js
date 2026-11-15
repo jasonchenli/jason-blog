@@ -6,6 +6,12 @@ const image = $('viewer-image');
 const escapeHTML = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const columnCount = () => innerWidth >= 1180 ? 4 : innerWidth >= 720 ? 3 : 2;
 function renderWall() {
+  const curated = currentAlbum.id === 'highlights';
+  $('photo-grid').classList.toggle('highlights-wall', curated);
+  if (curated) {
+    $('photo-grid').innerHTML = activePhotos.map((p,i) => `<button type="button" class="photo-tile curated-photo ${i===0?'curated-hero':i<3?'curated-feature':''}" data-index="${i}" aria-label="Open photo ${i+1} of ${activePhotos.length}: ${escapeHTML(p.alt)}"><img src="${i<3?p.src:p.thumb}" width="${p.width}" height="${p.height}" alt="${escapeHTML(p.alt)}" loading="${i<3?'eager':'lazy'}" decoding="async"><span class="zoom" aria-hidden="true">↗</span></button>`).join('');
+    return;
+  }
   const columns = Array.from({length:columnCount()}, () => []);
   const heights = columns.map(() => 0);
   const grid = $('photo-grid');
@@ -19,15 +25,26 @@ function renderWall() {
   $('photo-grid').innerHTML = columns.map(c => `<div class="photo-column">${c.join('')}</div>`).join('');
 }
 function route() {
-  let id = location.hash.replace(/^#(?:album\/)?/, '');
+  const deepLink = /^#photo=(DSC_\d{4})$/.exec(location.hash);
+  let id = deepLink ? 'all' : location.hash.replace(/^#(?:album\/)?/, '');
   if (id === 'group-photos') id = 'moments';
-  if (!data.albums.some(a => a.id === id)) id = 'all';
+  if (!data.albums.some(a => a.id === id)) id = 'highlights';
   currentAlbum = data.albums.find(a => a.id === id);
   activePhotos = currentAlbum.ids.map(id => data.photos.find(p => p.id === id));
   $('photo-count').textContent = `${activePhotos.length} photographs`;
-  $('filters').innerHTML = data.albums.map(a => `<button type="button" class="filter-tab" role="tab" id="tab-${a.id}" aria-controls="photo-grid" aria-selected="${a.id === id}" tabindex="${a.id === id ? 0 : -1}" data-filter="${a.id}">${a.name}<span class="count">${a.ids.length}</span></button>`).join('');
+  $('filters').innerHTML = data.albums.filter(a => a.id !== 'parade').map(a => `<button type="button" class="filter-tab" role="tab" id="tab-${a.id}" aria-controls="photo-grid" aria-selected="${a.id === id}" tabindex="${a.id === id ? 0 : -1}" data-filter="${a.id}">${a.name}<span class="count">${a.ids.length}</span></button>`).join('');
   $('photo-grid').setAttribute('aria-labelledby', `tab-${id}`);
   renderWall();
+  if (deepLink) {
+    const index = activePhotos.findIndex(p => p.id === deepLink[1]);
+    if (index >= 0) {
+      trigger = null;
+      updateViewer(index);
+      if (!dialog.open) dialog.showModal();
+      document.body.style.overflow = 'hidden';
+      $('viewer-close').focus();
+    }
+  } else if (dialog.open) dialog.close();
   document.title = `${id === 'all' ? 'The Photo Wall' : currentAlbum.name} — UPTA International Food Fair 2026`;
 }
 $('filters').addEventListener('click', e => {
@@ -46,6 +63,47 @@ $('filters').addEventListener('keydown', e => {
   const next = e.key === 'Home' ? 0 : e.key === 'End' ? buttons.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
   buttons[next].click();
 });
+
+const removalEmail = 'photographer@yizhoucp.com';
+function removalRequest(photo) {
+  const id = photo?.id || '';
+  const subject = `Photo removal request${id ? ' — ' + id : ''}`;
+  const body = [
+    `Photo number: ${id}`,
+    `Album: ${photo ? currentAlbum.name : ''}`,
+    `Photo link: ${id ? 'https://www.jasonchen.ai/uplands-iff-2026/#photo=' + id : ''}`,
+    '',
+    "Who is in the photo (e.g. me / my child, what they're wearing): ",
+    'Request: remove the photo / blur a face (choose one): ',
+    'Your name (optional): ',
+    '',
+    'Sent from the photo album removal link.'
+  ].join('\r\n');
+  return {subject, body, mailto:`mailto:${removalEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`};
+}
+$('footer-removal').href = removalRequest().mailto;
+$('viewer-copy-request').addEventListener('click', async () => {
+  const request = removalRequest(activePhotos[activeIndex]);
+  const text = `To: ${removalEmail}\r\nSubject: ${request.subject}\r\n\r\n${request.body}`;
+  let copied = false;
+  try { await navigator.clipboard.writeText(text); copied = true; } catch {
+    const field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('aria-label', 'Copy photo removal request');
+    field.style.cssText = 'position:fixed;left:0;top:0;opacity:0';
+    dialog.appendChild(field);
+    field.focus(); field.select();
+    try { copied = document.execCommand('copy'); } catch {}
+    field.remove();
+    $('viewer-copy-request').focus();
+  }
+  $('removal-status').textContent = copied
+    ? `Copied — paste into any email to ${removalEmail}`
+    : 'Copy unavailable. Select and copy the request below.';
+  $('removal-copy-fallback').hidden = copied;
+  $('removal-copy-fallback').value = copied ? '' : text;
+});
+
 let imageGeneration = 0;
 function clearViewerImage() {
   resetPhotoZoom();
@@ -82,9 +140,10 @@ function updateViewer(index) {
   loadViewerImage(photo);
   $('viewer-counter').textContent = `${currentAlbum.name} · ${activeIndex + 1} / ${activePhotos.length}`;
   $('viewer-name').textContent = photo.id;
-  const subject = encodeURIComponent(`Photo removal request — ${photo.id}`);
-  const body = encodeURIComponent(`I would like to request removal of photo ${photo.id} from UPTA International Food Fair 2026.\n\nDetails:\n`);
-  $('viewer-removal').href = `mailto:photographer@yizhoucp.com?subject=${subject}&body=${body}`;
+  $('viewer-removal').href = removalRequest(photo).mailto;
+  $('removal-status').textContent = '';
+  $('removal-copy-fallback').hidden = true;
+  $('removal-copy-fallback').value = '';
   $('viewer-download').href = photo.download;
   $('viewer-download').download = `${photo.id}-UPTA-2026.jpg`;
   prepareShare(photo);
@@ -280,7 +339,7 @@ stage.addEventListener('touchend', e => {
 stage.addEventListener('touchcancel', () => {gesture=null;lastTap=0;}, {passive:true});
 fetch('photos.json').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
   data = value;
-  data.albums.unshift({id:'all',name:'All Photos',ids:data.photos.map(p => p.id)});
+  data.albums.splice(1, 0, {id:'all',name:'All',ids:data.photos.map(p => p.id)});
   window.addEventListener('hashchange', route);
   let frame;
   let layoutWidth = $('photo-grid').clientWidth;

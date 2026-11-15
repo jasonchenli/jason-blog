@@ -36,3 +36,11 @@
 .viewer-stage{overflow:hidden;touch-action:none}.viewer-stage>img{transform-origin:center;user-select:none;-webkit-user-select:none;-webkit-user-drag:none}.viewer-arrow{z-index:2}
 
 @media(max-width:719px){#filters .filter-tab:nth-child(n){grid-column:span 4}}
+
+/* Removal drafts stay explicit; clipboard fallback works without a mail app. */
+.removal-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px}.removal-actions button{color:inherit;background:transparent;border:1px solid #ffffff60;border-radius:4px;padding:6px 9px;min-height:36px;font-size:11px}.removal-help{display:block;font-size:11px;line-height:1.4;opacity:.8}.viewer-caption{max-width:48%;padding-block:8px}#removal-status{font-size:11px;overflow-wrap:anywhere}#removal-copy-fallback{width:100%;min-height:130px}.viewer-bottom{height:auto}dialog[open]{grid-template-rows:65px minmax(0,1fr) auto}@media(max-width:719px){.viewer-caption{max-width:none;width:100%}.viewer-caption #viewer-removal{font-size:12px}.removal-actions button{min-height:44px;font-size:12px}.removal-help{font-size:10px}dialog[open]{grid-template-rows:58px minmax(0,1fr) auto}}
+
+/* Five visible tabs: two leading choices, then three categories. */
+@media(max-width:719px){#filters{grid-template-columns:repeat(6,minmax(0,1fr))}#filters .filter-tab:nth-child(n){grid-column:span 2}#filters .filter-tab:nth-child(-n+2){grid-column:span 3}}
+/* Preserve the curated reading order and give the opening photographs room. */
+.photo-grid.highlights-wall{grid-template-columns:repeat(6,minmax(0,1fr));align-items:start;gap:18px}.highlights-wall .curated-photo{grid-column:span 2}.highlights-wall .curated-hero{grid-column:1/-1}.highlights-wall .curated-feature{grid-column:span 3}.highlights-wall .photo-tile img{transform:none}.highlights-wall .curated-hero img{max-height:80vh;object-fit:contain;background:var(--paper)}@media(max-width:719px){.photo-grid.highlights-wall{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.highlights-wall .curated-photo{grid-column:span 1}.highlights-wall .curated-hero,.highlights-wall .curated-feature{grid-column:1/-1}.highlights-wall .curated-hero img{max-height:none}}
