@@ -12,7 +12,7 @@ function renderWall() {
     const grid = $('photo-grid');
     // Keep DOM and keyboard order identical to the curator's list.
     if (grid.dataset.curatedIds !== activePhotos.map(p => p.id).join(',')) {
-      grid.innerHTML = activePhotos.map((p,i) => `<button type="button" class="photo-tile curated-photo ${i===0?'curated-hero':''}" data-index="${i}" data-photo-id="${p.id}" aria-label="Open photo ${i+1} of ${activePhotos.length}: ${escapeHTML(p.alt)}"><img src="${i===0?p.src:p.thumb}" ${i===0?'':`srcset="${p.thumb} ${Math.round(640 * Math.min(1,p.width/p.height))}w, ${p.src} ${Math.round(2048 * Math.min(1,p.width/p.height))}w" sizes="(min-width:1600px) 340px, (min-width:1024px) 440px, (min-width:600px) 46vw, 94vw"`} width="${p.width}" height="${p.height}" alt="${escapeHTML(p.alt)}" loading="${i<4?'eager':'lazy'}" decoding="async"><span class="zoom" aria-hidden="true">↗</span></button>`).join('');
+      grid.innerHTML = activePhotos.map((p,i) => `<button type="button" class="photo-tile curated-photo ${i<2?'curated-hero':''}" data-index="${i}" data-photo-id="${p.id}" aria-label="Open photo ${i+1} of ${activePhotos.length}: ${escapeHTML(p.alt)}"><img src="${i<2?p.src:p.thumb}" ${i<2?'':`srcset="${p.thumb} ${Math.round(640 * Math.min(1,p.width/p.height))}w, ${p.src} ${Math.round(2048 * Math.min(1,p.width/p.height))}w" sizes="(min-width:1600px) 340px, (min-width:1024px) 440px, (min-width:600px) 46vw, 94vw"`} width="${p.width}" height="${p.height}" alt="${escapeHTML(p.alt)}" loading="${i<4?'eager':'lazy'}" decoding="async"><span class="zoom" aria-hidden="true">↗</span></button>`).join('');
       grid.dataset.curatedIds = activePhotos.map(p => p.id).join(',');
     }
     layoutHighlights();
@@ -39,19 +39,25 @@ function layoutHighlights() {
   const gap = 14;
   const count = innerWidth >= 1600 ? 4 : innerWidth >= 1024 ? 3 : innerWidth >= 600 ? 2 : 1;
   const tileWidth = (width - gap * (count - 1)) / count;
-  const heroHeight = innerWidth >= 1024 ? Math.min(580, Math.max(420, width * 2 / 3)) : width * activePhotos[0].height / activePhotos[0].width;
-  const heights = Array(count).fill(heroHeight + gap);
+  const heroColumns = innerWidth >= 600 ? 2 : 1;
+  const heroWidth = (width - gap * (heroColumns - 1)) / heroColumns;
+  const naturalHeroHeight = heroWidth * activePhotos[0].height / activePhotos[0].width;
+  const heroHeight = Math.ceil(innerWidth >= 1024 ? Math.min(580, Math.max(420, naturalHeroHeight)) : naturalHeroHeight);
+  const heroBlockHeight = heroColumns === 2 ? heroHeight : heroHeight * 2 + gap;
+  const heights = Array(count).fill(heroBlockHeight + gap);
   const tiles = [...grid.children];
   tiles.forEach((tile,index) => {
-    let x = 0, y = 0, w = width, h = heroHeight;
-    if (index > 0) {
+    let x = index === 1 && heroColumns === 2 ? heroWidth + gap : 0;
+    let y = index === 1 && heroColumns === 1 ? heroHeight + gap : 0;
+    let w = heroWidth, h = heroHeight;
+    if (index > 1) {
       // Lowest available top edge; tie goes to the leftmost column.
       // Positive tile heights make top edges monotonic in curator order.
       const column = heights.indexOf(Math.min(...heights));
       x = column * (tileWidth + gap);
       y = heights[column];
       w = tileWidth;
-      h = w * activePhotos[index].height / activePhotos[index].width;
+      h = Math.ceil(w * activePhotos[index].height / activePhotos[index].width);
       heights[column] = y + h + gap;
     }
     tile.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
@@ -371,7 +377,7 @@ stage.addEventListener('touchend', e => {
   }
 }, {passive:true});
 stage.addEventListener('touchcancel', () => {gesture=null;lastTap=0;}, {passive:true});
-fetch('photos.json?v=20261115-4').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
+fetch('photos.json?v=20261115-5').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
   data = value;
   data.albums.splice(1, 0, {id:'all',name:'All',ids:data.photos.map(p => p.id)});
   window.addEventListener('hashchange', route);
