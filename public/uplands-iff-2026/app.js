@@ -4,7 +4,7 @@ const $ = id => document.getElementById(id);
 const dialog = $('lightbox');
 const image = $('viewer-image');
 const escapeHTML = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const columnCount = () => currentAlbum?.id === 'highlights' ? (innerWidth >= 1600 ? 4 : innerWidth >= 1024 ? 3 : innerWidth >= 600 ? 2 : 1) : (innerWidth >= 1180 ? 4 : innerWidth >= 720 ? 3 : 2);
+const columnCount = () => currentAlbum?.id === 'highlights' ? (innerWidth >= 1600 ? 4 : innerWidth >= 1024 ? 3 : 2) : (innerWidth >= 1180 ? 4 : innerWidth >= 720 ? 3 : 2);
 function renderWall() {
   const curated = currentAlbum.id === 'highlights';
   $('photo-grid').classList.toggle('highlights-wall', curated);
@@ -37,7 +37,7 @@ function layoutHighlights() {
   if (!grid.classList.contains('highlights-wall')) return;
   const width = grid.clientWidth;
   const gap = 14;
-  const count = innerWidth >= 1600 ? 4 : innerWidth >= 1024 ? 3 : innerWidth >= 600 ? 2 : 1;
+  const count = innerWidth >= 1600 ? 4 : innerWidth >= 1024 ? 3 : 2;
   const tileWidth = (width - gap * (count - 1)) / count;
   const heroColumns = innerWidth >= 600 ? 2 : 1;
   const heroWidth = (width - gap * (heroColumns - 1)) / heroColumns;
@@ -377,7 +377,7 @@ stage.addEventListener('touchend', e => {
   }
 }, {passive:true});
 stage.addEventListener('touchcancel', () => {gesture=null;lastTap=0;}, {passive:true});
-fetch('photos.json?v=20261115-5').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
+fetch('photos.json?v=20261115-6').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
   data = value;
   data.albums.splice(1, 0, {id:'all',name:'All',ids:data.photos.map(p => p.id)});
   window.addEventListener('hashchange', route);
