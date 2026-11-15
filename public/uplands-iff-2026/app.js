@@ -39,7 +39,7 @@ function layoutHighlights() {
   const gap = 14;
   const count = innerWidth >= 1600 ? 4 : innerWidth >= 1024 ? 3 : 2;
   const tileWidth = (width - gap * (count - 1)) / count;
-  const heroColumns = innerWidth >= 600 ? 2 : 1;
+  const heroColumns = 2;
   const heroWidth = (width - gap * (heroColumns - 1)) / heroColumns;
   const naturalHeroHeight = heroWidth * activePhotos[0].height / activePhotos[0].width;
   const heroHeight = Math.ceil(innerWidth >= 1024 ? Math.min(580, Math.max(420, naturalHeroHeight)) : naturalHeroHeight);
@@ -377,7 +377,7 @@ stage.addEventListener('touchend', e => {
   }
 }, {passive:true});
 stage.addEventListener('touchcancel', () => {gesture=null;lastTap=0;}, {passive:true});
-fetch('photos.json?v=20261115-6').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
+fetch('photos.json?v=20261115-7').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
   data = value;
   data.albums.splice(1, 0, {id:'all',name:'All',ids:data.photos.map(p => p.id)});
   window.addEventListener('hashchange', route);
