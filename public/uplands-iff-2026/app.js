@@ -337,7 +337,7 @@ stage.addEventListener('touchend', e => {
   }
 }, {passive:true});
 stage.addEventListener('touchcancel', () => {gesture=null;lastTap=0;}, {passive:true});
-fetch('photos.json?v=20261115-2').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
+fetch('photos.json?v=20261115-3').then(r => { if (!r.ok) throw Error('Unable to load photos'); return r.json(); }).then(value => {
   data = value;
   data.albums.splice(1, 0, {id:'all',name:'All',ids:data.photos.map(p => p.id)});
   window.addEventListener('hashchange', route);
